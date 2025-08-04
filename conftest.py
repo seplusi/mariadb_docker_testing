@@ -1,6 +1,7 @@
 import docker
 import pytest
-import mysql.connector
+from resources.objects.mysql import mysqlClient
+from resources.objects.docker import search_container, wait_for_container_to_have_status
 
 
 @pytest.fixture(scope="session")
@@ -12,12 +13,16 @@ def mariadb_client():
     else:
         assert False, f'DB image not found in {docker_client.images.list()}'
     
+    if not search_container(docker_client, 'MariaDB Server'):
+        # Create docker container with mariadb
+        docker_client.containers.run('db_server', ports={'3306/tcp': 9001}, detach=True)
+        # Wait for it to have running status
+        wait_for_container_to_have_status(docker_client, 'MariaDB Server', 'running')
     
-    for container in docker_client.containers.list():
-        if container.labels['name'] == 'MariaDB Server':
-            break
-    else:
-        assert False, f'Container with MariaDB Server not found'
+    # Create object to interact with database
+    mysql = mysqlClient("127.0.0.1", 9001, "root", "example", 'mydatabase')
     
-    mysql_client = mysql.connector.connect(host="127.0.0.1", port=9001, user="root", password="example", database='mydatabase')
-    yield mysql_client
+    yield mysql
+
+    # Teardown
+    mysql.close()
