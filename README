@@ -1,0 +1,6 @@
+mariadb -h 127.0.0.1 -P 9001 -u root -p mydatabase
+
+
+docker run -p 9001:3306 db_server
+
+
