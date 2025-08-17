@@ -24,13 +24,33 @@ class mysqlClient(object):
     
     def get_data_from_query(self, query):
         # Gets data from DB based in query
-        cursor = self.mysql_conn.cursor()
-        cursor.execute(query)
-
-        return cursor.fetchall()
+        return self._perform_sql_cmd(query)
 
     def insert_data(self, query):
         # Insert data based in query
         cursor = self.mysql_conn.cursor()
         cursor.execute(query)
         self.mysql_conn.commit()
+
+    def create_table(self, sql_cmd):
+        return self._perform_sql_cmd(sql_cmd)
+    
+    def _perform_sql_cmd(self, query):
+        # Gets data from DB based in query
+        cursor = self.mysql_conn.cursor()
+        cursor.execute(query)
+
+        return cursor.fetchall()
+
+    def delete_table_containing_string(self, subname):
+        # Check is table exists. If not return False
+        result = self._perform_sql_cmd('show tables;')
+        for entry in result:
+            if subname in entry[0]:
+                break
+        else:
+            return False
+
+        # If it exists then let's delete it
+        del_table_sql = f"DROP TABLE {entry[0]}"
+        return self._perform_sql_cmd(del_table_sql)

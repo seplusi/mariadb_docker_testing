@@ -1,5 +1,7 @@
 import docker
 import pytest
+import random
+import string
 from resources.objects.mysql import mysqlClient
 from resources.objects.docker import search_container, wait_for_container_to_have_status
 
@@ -26,3 +28,12 @@ def mariadb_client():
 
     # Teardown
     mysql.close()
+
+
+@pytest.fixture(scope="function", name='generate_random')
+def generate_random_for_table_creation(mariadb_client):
+    random_name = ''.join(random.choices(string.ascii_lowercase, k=10))
+    yield random_name
+
+    # This fixture is to be used when we want to create a table with a random substring. Clean it if exists
+    mariadb_client.delete_table_containing_string(random_name)

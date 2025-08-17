@@ -34,3 +34,30 @@ def test_insert_data_into_users_table(mariadb_client):
     assert entry[1] == user
     assert entry[2] == 'seplusi_arcanjo@hotmail.com'
 
+
+def test_create_table(mariadb_client, generate_random):
+    table = f'create_test_table_{generate_random}'
+    # SQL statement to create the table
+    create_table_sql = f"""
+    CREATE TABLE IF NOT EXISTS {table} (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        first_name VARCHAR(50) NOT NULL,
+        last_name VARCHAR(50) NOT NULL,
+        age INT,
+        major VARCHAR(100)
+    );
+    """
+
+    # Execute the CREATE TABLE statement
+    output = mariadb_client.create_table(create_table_sql)
+    assert output == [], f'Expected output: []. Got {output} instead.'
+    
+    # Validate table items are correct
+    query = f'desc {table};'
+    output = mariadb_client.get_data_from_query(query)
+    assert len(output) == 5
+    assert output[0][:2] == ('id', 'int(11)',)
+    assert output[1][:2] == ('first_name', 'varchar(50)',)
+    assert output[2][:2] == ('last_name', 'varchar(50)')
+    assert output[3][:2] == ('age', 'int(11)')
+    assert output[4][:2] == ('major', 'varchar(100)')
