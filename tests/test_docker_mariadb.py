@@ -2,13 +2,13 @@ import random
 import string
 
 
-def test_show_table_users(mariadb_client):
-    query = "show tables;"
+def test_show_table_users(mariadb_client, config):
+    query = config.data.get('tables', 'show_all')
     assert any([table[0] == 'users' for table in mariadb_client.get_data_from_query(query)])
     
 
-def test_table_description(mariadb_client):
-    query = 'desc users;'
+def test_table_description(mariadb_client, config):
+    query = config.data.get('tables', 'desc_table').replace('{table}', 'users')
     output = mariadb_client.get_data_from_query(query)
     assert len(output) == 3
     assert output[0][:2] == ('id', 'int(11)',)
@@ -16,14 +16,14 @@ def test_table_description(mariadb_client):
     assert output[2][:2] == ('email', 'varchar(255)')
 
 
-def test_insert_data_into_users_table(mariadb_client):
+def test_insert_data_into_users_table(mariadb_client, config):
     # Insert data
     user = f'seplusi_{"".join(random.choices(string.ascii_lowercase, k=7))}'
-    query = f'INSERT INTO users (username, email) VALUES("{user}", "seplusi_arcanjo@hotmail.com")'
+    query = config.data.get('insert', 'into_users').replace('{user}', user)
     mariadb_client.insert_data(query)
 
     # Query table to assert on newly added data
-    query = 'select * from users'
+    query = config.data.get('select', 'all_from_users')
     output = mariadb_client.get_data_from_query(query)
     for entry in output:
         if entry[1] == user:
@@ -35,25 +35,17 @@ def test_insert_data_into_users_table(mariadb_client):
     assert entry[2] == 'seplusi_arcanjo@hotmail.com'
 
 
-def test_create_table(mariadb_client, generate_random):
+def test_create_table(mariadb_client, generate_random, config):
     table = f'create_test_table_{generate_random}'
     # SQL statement to create the table
-    create_table_sql = f"""
-    CREATE TABLE IF NOT EXISTS {table} (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        first_name VARCHAR(50) NOT NULL,
-        last_name VARCHAR(50) NOT NULL,
-        age INT,
-        major VARCHAR(100)
-    );
-    """
+    create_table_sql = config.data.get('tables', 'create_test_table').replace('{table}', table)
 
     # Execute the CREATE TABLE statement
     output = mariadb_client.create_table(create_table_sql)
     assert output == [], f'Expected output: []. Got {output} instead.'
     
     # Validate table items are correct
-    query = f'desc {table};'
+    query = config.data.get('tables', 'desc_table').replace('{table}', table)
     output = mariadb_client.get_data_from_query(query)
     assert len(output) == 5
     assert output[0][:2] == ('id', 'int(11)',)

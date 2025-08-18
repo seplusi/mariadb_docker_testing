@@ -3,6 +3,7 @@ import pytest
 import random
 import string
 from resources.objects.mysql import mysqlClient
+from resources.objects.config.config import configClass
 from resources.objects.docker import search_container, wait_for_container_to_have_status
 
 
@@ -37,3 +38,8 @@ def generate_random_for_table_creation(mariadb_client):
 
     # This fixture is to be used when we want to create a table with a random substring. Clean it if exists
     mariadb_client.delete_table_containing_string(random_name)
+
+
+@pytest.fixture(scope="session")
+def config():
+    yield configClass()
