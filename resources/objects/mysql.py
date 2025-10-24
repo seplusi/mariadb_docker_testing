@@ -32,6 +32,8 @@ class mysqlClient(object):
         cursor.execute(query)
         self.mysql_conn.commit()
 
+        return cursor.lastrowid
+
     def create_table(self, sql_cmd):
         return self._perform_sql_cmd(sql_cmd)
     
