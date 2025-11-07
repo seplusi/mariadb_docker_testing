@@ -4,3 +4,22 @@ mariadb -h 127.0.0.1 -P 9001 -u root -p mydatabase
 docker run -p 9001:3306 db_server
 
 
+*
+* PYTEST
+*
+* Run pytest with smoke marker
+*
+# pytest tests/ -m smoke
+====================================== 1 passed, 3 deselected in 4.04s 
+
+*
+* Run pytest with a specific test name
+*
+# pytest tests/test_docker_mariadb.py::test_create_table
+============================================= 1 passed in 0.45s
+
+*
+* Run tests by keyword expressions
+*
+# pytest -k "create"
+====================================== 1 passed, 3 deselected in 0.70s =======================================

@@ -1,13 +1,17 @@
 import random
 import string
+import pytest
+
+from resources.objects.config.config import configClass
+from resources.objects.mysql import mysqlClient
 
 
-def test_show_table_users(mariadb_client, config):
+def test_show_table_users(mariadb_client: mysqlClient, config: configClass):
     query = config.data.get('tables', 'show_all')
     assert any([table[0] == 'users' for table in mariadb_client.get_data_from_query(query)])
     
 
-def test_table_description(mariadb_client, config):
+def test_table_description(mariadb_client: mysqlClient, config: configClass):
     query = config.data.get('tables', 'desc_table').replace('{table}', 'users')
     output = mariadb_client.get_data_from_query(query)
     assert len(output) == 3
@@ -16,7 +20,7 @@ def test_table_description(mariadb_client, config):
     assert output[2][:2] == ('email', 'varchar(255)')
 
 
-def test_insert_data_into_users_table(mariadb_client, config):
+def test_insert_data_into_users_table(mariadb_client: mysqlClient, config: configClass):
     # Insert data
     user = f'seplusi_{"".join(random.choices(string.ascii_lowercase, k=7))}'
     query = config.data.get('insert', 'into_users').replace('{user}', user)
@@ -35,7 +39,8 @@ def test_insert_data_into_users_table(mariadb_client, config):
     assert entry[2] == 'seplusi_arcanjo@hotmail.com'
 
 
-def test_create_table(mariadb_client, generate_random, config):
+@pytest.mark.smoke
+def test_create_table(mariadb_client: mysqlClient, generate_random: str, config: configClass):
     table = f'create_test_table_{generate_random}'
     # SQL statement to create the table
     create_table_sql = config.data.get('tables', 'create_test_table').replace('{table}', table)
